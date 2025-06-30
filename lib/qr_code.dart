@@ -294,7 +294,7 @@ class DottedLine extends StatelessWidget {
   final double height;
   final Color color;
 
-  const DottedLine({this.height = 1, this.color = Colors.grey});
+  const DottedLine({super.key, this.height = 1, this.color = Colors.grey});
 
   @override
   Widget build(BuildContext context) {

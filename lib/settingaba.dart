@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 // }
 
 class SettingPage extends StatelessWidget {
+  const SettingPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
@@ -30,7 +32,7 @@ class SettingPage extends StatelessWidget {
                   ),
                 ),
               ),
-              Container(
+              SizedBox(
                 height: screenHeight * 0.20,
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
