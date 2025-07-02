@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:aba_app/settingaba.dart';
 import 'package:flutter/material.dart';
 
-import 'qr_code.dart';
+//import 'qr_code.dart';
+import 'transfers_list.dart';
 
 void main() {
   runApp(MainApp());
@@ -280,7 +281,7 @@ class _HomePageState extends State<HomePage> {
                   crossAxisCount: 3,
                   mainAxisSpacing: 15,
                   crossAxisSpacing: 15,
-                  childAspectRatio: 1.3,
+                  childAspectRatio: 1,
                 ),
                 itemCount: data.length,
                 itemBuilder: (context, index) {
@@ -288,7 +289,7 @@ class _HomePageState extends State<HomePage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => ABAPaymentQR()),
+                        MaterialPageRoute(builder: (context) => ABATransferApp()),
                       );
                     },
                     child: Container(
