@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 void main() {
   runApp(const ABATransferApp());
 }
@@ -22,10 +23,18 @@ class ABATransferApp extends StatelessWidget {
   }
 }
 
-class ABATransferPage extends StatelessWidget {
+class ABATransferPage extends StatefulWidget {
   const ABATransferPage({super.key});
 
-  final List<Map<String, dynamic>> transferOptions = const [
+  @override
+  State<ABATransferPage> createState() => _ABATransferPageState();
+}
+
+class _ABATransferPageState extends State<ABATransferPage> {
+  final TextEditingController _searchController = TextEditingController();
+  String searchQuery = "";
+
+  final List<Map<String, dynamic>> transferOptions = [
     {
       'title': 'Choose from Favorites',
       'subtitle': 'Transfer to friends from your favorite list',
@@ -72,22 +81,53 @@ class ABATransferPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final filteredOptions = transferOptions.where((item) {
+      final title = item['title'].toString().toLowerCase();
+      final subtitle = item['subtitle'].toString().toLowerCase();
+      final query = searchQuery.toLowerCase();
+      return title.contains(query) || subtitle.contains(query);
+    }).toList();
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ABA Transfers'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         leading: BackButton(
-            onPressed:(){
+          onPressed: () {
             Navigator.pop(context);
           },
         ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16.0),
-            child: Icon(Icons.search),
+        title: Container(
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.white12,
+            borderRadius: BorderRadius.circular(12),
           ),
-        ],
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+          child: TextField(
+            controller: _searchController,
+            onChanged: (value) => setState(() => searchQuery = value),
+            style: const TextStyle(color: Colors.white),
+            cursorColor: Colors.redAccent,
+            decoration: InputDecoration(
+              hintText: 'Search transfers...',
+              hintStyle: const TextStyle(color: Colors.white54),
+              prefixIcon: const Icon(Icons.search, color: Colors.white70),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              suffixIcon: searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white60),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() {
+                          searchQuery = '';
+                        });
+                      },
+                    )
+                  : null,
+            ),
+          ),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -102,7 +142,23 @@ class ABATransferPage extends StatelessWidget {
             style: TextStyle(fontSize: 14, color: Colors.grey),
           ),
           const SizedBox(height: 24),
-          ...transferOptions.map((item) => TransferTile(item)).toList(),
+          if (filteredOptions.isEmpty)
+            Column(
+              children: const [
+                Icon(Icons.inbox, size: 60, color: Colors.grey),
+                SizedBox(height: 10),
+                Text(
+                  'Not Found',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  'Sorry, there are no results that match your search.',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ],
+            )
+          else
+            ...filteredOptions.map((item) => TransferTile(item)).toList(),
         ],
       ),
     );
@@ -133,13 +189,7 @@ class TransferTile extends StatelessWidget {
           data['subtitle'],
           style: const TextStyle(color: Colors.grey),
         ),
-        // trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 16),
-        // onTap: () {
-        //   // Add action for tap
-        // },
       ),
     );
   }
 }
-
-
