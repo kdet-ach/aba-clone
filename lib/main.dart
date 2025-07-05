@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:aba_app/settingaba.dart';
 import 'package:flutter/material.dart';
 
-// Import your TransferList page directly
+//import 'qr_code.dart';
 import 'transfers_list.dart';
 
 void main() {
-  runApp(const MainApp()); // Make MainApp const if possible
+  runApp(MainApp());
 }
 
 class MainApp extends StatelessWidget {
@@ -15,28 +15,7 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      // Define your app-wide theme here
-      theme: ThemeData(
-        brightness: Brightness.dark, // Set dark mode for the whole app
-        primaryColor: Colors.red,
-        fontFamily: 'Arial',
-        scaffoldBackgroundColor: const Color(0xFF0F1F2B), // Dark background for scaffolds
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.transparent, // AppBar background
-          elevation: 0,
-          iconTheme: IconThemeData(color: Colors.white), // Default icon color for app bars
-          titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold), // AppBar title style
-        ),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white),
-          bodyMedium: TextStyle(color: Colors.white),
-          // Define other text styles as needed for your dark theme
-        ),
-      ),
-      home: const HomePage(),
-    );
+    return MaterialApp(debugShowCheckedModeBanner: false, home: HomePage());
   }
 }
 
@@ -89,19 +68,15 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _adPageController = PageController(viewportFraction: 1);
-    // Use a delayed initialization for the timer to avoid potential issues during hot reload
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _adTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-        if (!mounted) return;
-        setState(() {
-          // Loop the ad pages
-          _currentAdPage = (_currentAdPage + 1) % ad.length;
-          _adPageController.animateToPage(
-            _currentAdPage,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
-        });
+    _adTimer = Timer.periodic(Duration(seconds: 3), (timer) {
+      if (!mounted) return;
+      setState(() {
+        _currentAdPage = (_currentAdPage + 1);
+        _adPageController.animateToPage(
+          _currentAdPage,
+          duration: Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
       });
     });
   }
@@ -116,56 +91,59 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // The body content remains the same, adjusted for the dark theme
       body: SingleChildScrollView(
         child: Container(
-          padding: const EdgeInsets.all(20),
-          color: const Color(0xFF0F1F2B), // Ensure consistent background
+          padding: EdgeInsets.all(20),
+          color: Colors.white10,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Top -----------------------------------------------------------
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: const [
-                  Icon(Icons.message_outlined, color: Colors.white),
+                children: [
+                  Icon(Icons.message_outlined),
                   SizedBox(width: 20),
-                  Icon(Icons.notifications_outlined, color: Colors.white),
+                  Icon(Icons.notifications_outlined),
                   SizedBox(width: 20),
-                  Icon(Icons.qr_code_outlined, color: Colors.white),
+                  Icon(Icons.qr_code_outlined),
                 ],
               ),
               // User ----------------------------------------------------------
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               Row(
                 children: [
                   IconButton(
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const SettingPage()),
+                        MaterialPageRoute(builder: (context) => SettingPage()),
                       );
                     },
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.account_circle_sharp,
                       size: 64,
                       color: Colors.blueGrey,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  // Icon(
+                  //   Icons.account_circle_sharp,
+                  //   size: 64,
+                  //   color: Colors.blueGrey,
+                  // ),
+                  SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
                         'Good Morning!',
-                        style: TextStyle(color: Colors.white54), // Adjusted for dark theme
+                        style: TextStyle(color: Colors.black54),
                       ),
                       Text(
                         'Kan Chanborey',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white, // Adjusted for dark theme
                         ),
                       ),
                     ],
@@ -173,13 +151,13 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
               // Balance -------------------------------------------------------
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.all(20.0),
+                padding: EdgeInsets.all(20.0),
                 width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(15),
-                  boxShadow: const [
+                  boxShadow: [
                     BoxShadow(
                       color: Colors.black26,
                       blurRadius: 5.0,
@@ -198,7 +176,7 @@ class _HomePageState extends State<HomePage> {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(
+                          padding: EdgeInsets.symmetric(
                             horizontal: 10,
                             vertical: 5,
                           ),
@@ -213,7 +191,7 @@ class _HomePageState extends State<HomePage> {
                               ],
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             '\$ 1.571.237.48',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
@@ -222,23 +200,23 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        SizedBox(width: 10),
                         Container(
-                          padding: const EdgeInsets.all(5),
+                          padding: EdgeInsets.all(5),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10),
                             color: Colors.grey,
                           ),
-                          child: const Icon(Icons.visibility_outlined, size: 23),
+                          child: Icon(Icons.visibility_outlined, size: 23),
                         ),
                       ],
                     ),
                     // ---------------------------------------------------------
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(
+                          padding: EdgeInsets.symmetric(
                             horizontal: 7,
                             vertical: 2,
                           ),
@@ -254,7 +232,7 @@ class _HomePageState extends State<HomePage> {
                               ],
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Default',
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
@@ -263,8 +241,8 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 5),
-                        const Text(
+                        SizedBox(width: 5),
+                        Text(
                           'Savings',
                           style: TextStyle(
                             fontSize: 16,
@@ -275,17 +253,17 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                     // ---------------------------------------------------------
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Container(
-                        constraints: const BoxConstraints(maxWidth: 370),
+                        constraints: BoxConstraints(maxWidth: 370),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             _action(Icons.call_received, 'Receive'),
                             _action(Icons.send_sharp, 'Send'),
-                            const Text('|'),
+                            Text('|'),
                             _action(Icons.analytics, 'Analytics'),
                           ],
                         ),
@@ -295,11 +273,11 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               // Grid View -----------------------------------------------------
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               GridView.builder(
                 shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                physics: NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   mainAxisSpacing: 15,
                   crossAxisSpacing: 15,
@@ -309,27 +287,17 @@ class _HomePageState extends State<HomePage> {
                 itemBuilder: (context, index) {
                   return InkWell(
                     onTap: () {
-                      // Navigate to ABATransferPage when 'Transfers' is tapped
-                      if (data[index]['title'] == 'Transfers') {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const ABATransferPage()),
-                        );
-                      }
-                      // You can add more specific navigation for other items if needed
-                      // else if (data[index]['title'] == 'Accounts') {
-                      //   Navigator.push(
-                      //     context,
-                      //     MaterialPageRoute(builder: (context) => AccountsPage()),
-                      //   );
-                      // }
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ABATransferApp()),
+                      );
                     },
                     child: Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
-                        color: Colors.white, // Ensure grid items are visible
-                        boxShadow: const [
+                        color: Colors.white,
+                        boxShadow: [
                           BoxShadow(
                             color: Colors.black26,
                             blurRadius: 5.0,
@@ -345,14 +313,13 @@ class _HomePageState extends State<HomePage> {
                             height: 50,
                             width: 50,
                           ),
-                          const SizedBox(height: 10),
+                          SizedBox(height: 10),
                           Text(
                             data[index]['title'].toString(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1,
-                              color: Colors.black, // Text color for grid items
                             ),
                           ),
                         ],
@@ -362,8 +329,8 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
               // Divider -------------------------------------------------------
-              const SizedBox(height: 10),
-              const Divider(thickness: 1, color: Colors.black26),
+              SizedBox(height: 10),
+              Divider(thickness: 1, color: Colors.black26),
               // List View -----------------------------------------------------
               SizedBox(
                 height: 65,
@@ -373,15 +340,15 @@ class _HomePageState extends State<HomePage> {
                   itemCount: list.length,
                   itemBuilder: (context, index) {
                     return Container(
-                      padding: const EdgeInsets.symmetric(
+                      padding: EdgeInsets.symmetric(
                         horizontal: 20,
                         vertical: 8,
                       ),
-                      margin: const EdgeInsets.only(right: 10, top: 8, bottom: 8),
+                      margin: EdgeInsets.only(right: 10, top: 8, bottom: 8),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
                         color: Colors.blue,
-                        boxShadow: const [
+                        boxShadow: [
                           BoxShadow(
                             color: Colors.black26,
                             blurRadius: 5.0,
@@ -396,10 +363,10 @@ class _HomePageState extends State<HomePage> {
                             height: 35,
                             width: 35,
                           ),
-                          const SizedBox(width: 10),
+                          SizedBox(width: 10),
                           Text(
                             list[index]['title'].toString(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 18,
                               color: Colors.white,
                               fontWeight: FontWeight.normal,
@@ -413,17 +380,16 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               // New & Promotions ----------------------------------------------
-              const SizedBox(height: 20),
-              const Text(
+              SizedBox(height: 20),
+              Text(
                 'News & Promotions',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1,
-                  color: Colors.white, // Adjusted for dark theme
                 ),
               ),
-              const SizedBox(height: 15),
+              SizedBox(height: 15),
               SizedBox(
                 height: 160,
                 child: PageView.builder(
@@ -431,7 +397,7 @@ class _HomePageState extends State<HomePage> {
                   itemBuilder: (context, index) {
                     final adIndex = index % ad.length;
                     return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 3),
+                      padding: EdgeInsets.symmetric(horizontal: 3),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(15),
                         child: Image.asset(
@@ -446,17 +412,159 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               // Explore Services ----------------------------------------------
-              const SizedBox(height: 30),
-              const Text(
-                'Explore Services', // Corrected typo from 'Exolore'
+              SizedBox(height: 30),
+              Text(
+                'Exolore Services',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1,
-                  color: Colors.white, // Adjusted for dark theme
                 ),
               ),
-              const SizedBox(height: 15),
+              SizedBox(height: 15),
+
+              // RepaintBoundary(
+              //   child: Stack(
+              //     children: [
+              //       ClipRRect(
+              //         borderRadius: BorderRadius.circular(15),
+              //         child: Image.asset(
+              //           'assets/ad1.png',
+              //           width: double.infinity,
+              //           height: 130,
+              //           fit: BoxFit.cover,
+              //         ),
+              //       ),
+              //       ClipRRect(
+              //         borderRadius: BorderRadius.circular(15),
+              //         child: BackdropFilter(
+              //           filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              //           child: Container(
+              //             width: double.infinity,
+              //             height: 130,
+              //             color: Colors.black.withOpacity(0.2),
+              //             child: ListView.builder(
+              //               scrollDirection: Axis.horizontal,
+              //               itemCount: list.length,
+              //               itemBuilder: (context, index) {
+              //                 return Container(
+              //                   width: 100,
+              //                   padding: EdgeInsets.all(10),
+              //                   decoration: BoxDecoration(
+              //                           border: Border.all(
+              //                             width: 2,
+              //                             color: Colors.white,
+              //                           ),
+              //                           borderRadius: BorderRadius.circular(10),
+              //                         ),
+              //                   child: Column(
+              //                     mainAxisAlignment: MainAxisAlignment.start,
+              //                     crossAxisAlignment: CrossAxisAlignment.center,
+              //                     children: [
+              //                       Container(
+              //                         width: 50,
+              //                         height: 50,
+              //                         decoration: BoxDecoration(
+              //                           border: Border.all(
+              //                             width: 2,
+              //                             color: Colors.white,
+              //                           ),
+              //                           borderRadius: BorderRadius.circular(10),
+              //                         ),
+              //                         child: Image.asset(
+              //                           list[index]['image'].toString(),
+              //                           height: 40,
+              //                           width: 40,
+              //                         ),
+              //                       ),
+              //                       SizedBox(height: 5),
+              //                       Text(
+              //                         list[index]['title'].toString(),
+              //                         style: TextStyle(
+              //                           fontSize: 16,
+              //                           color: Colors.white,
+              //                         ),
+              //                         overflow: TextOverflow.fade,
+              //                         maxLines: 2,
+              //                         textAlign: TextAlign.center,
+              //                       ),
+              //                     ],
+              //                   ),
+              //                 );
+              //               },
+              //             ),
+              //           ),
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
+
+              // RepaintBoundary(
+              //   child: Stack(
+              //     children: [
+              //       ClipRRect(
+              //         borderRadius: BorderRadius.circular(15),
+              //         child: Image.asset(
+              //           'assets/ad1.png',
+              //           width: double.infinity,
+              //           height: 120,
+              //           fit: BoxFit.cover,
+              //         ),
+              //       ),
+              //       ClipRRect(
+              //         borderRadius: BorderRadius.circular(15),
+              //         child: BackdropFilter(
+              //           filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              //           child: Container(
+              //             width: double.infinity,
+              //             height: 120,
+              //             color: Colors.black.withOpacity(0.2),
+              //             child: ListView.builder(
+              //               scrollDirection: Axis.horizontal,
+              //               itemCount: list.length,
+              //               itemBuilder: (context, index) {
+              //                 return Container(
+              //                   padding: EdgeInsets.all(25),
+              //                   width: 100,
+              //                   child: Column(
+              //                     children: [
+              //                       Container(
+              //                         width: 40,
+              //                         height: 40,
+              //                         decoration: BoxDecoration(
+              //                           border: Border.all(
+              //                             width: 2,
+              //                             color: Colors.white,
+              //                           ),
+              //                           borderRadius: BorderRadius.circular(10),
+              //                         ),
+              //                         child: Image.asset(
+              //                           list[index]['image'].toString(),
+              //                         ),
+              //                       ),
+              //                       SizedBox(height: 10),
+              //                       Text(
+              //                         list[index]['title'].toString(),
+              //                         style: TextStyle(
+              //                           fontSize: 14,
+              //                           color: Colors.white,
+              //                         ),
+              //                         maxLines: 1,
+              //                         overflow: TextOverflow.ellipsis,
+              //                         textAlign: TextAlign.center,
+              //                       ),
+              //                     ],
+              //                   ),
+              //                 );
+              //               },
+              //             ),
+              //           ),
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
               RepaintBoundary(
                 child: Stack(
                   children: [
@@ -467,9 +575,6 @@ class _HomePageState extends State<HomePage> {
                         width: double.infinity,
                         height: 120,
                         fit: BoxFit.cover,
-                        color: Colors.white.withOpacity(
-                            0.9), // Original code used BlendMode.modulate, but this provides a more direct opacity control
-                        colorBlendMode: BlendMode.modulate, // Retained original blend mode
                       ),
                     ),
                     ClipRRect(
@@ -490,7 +595,7 @@ class _HomePageState extends State<HomePage> {
                                 ),
                                 child: Container(
                                   width: 50,
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  padding: EdgeInsets.symmetric(vertical: 10),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
@@ -503,23 +608,27 @@ class _HomePageState extends State<HomePage> {
                                         decoration: BoxDecoration(
                                           border: Border.all(
                                             width: 2,
-                                            color: Colors.black, // Border color for inner container
+                                            color: Colors.black,
                                           ),
-                                          borderRadius: BorderRadius.circular(12),
-                                          color: Colors.white, // Background for the icon/image
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          color: Colors.white,
                                         ),
                                         child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
                                           child: Image.asset(
                                             list[index]['image'].toString(),
                                             fit: BoxFit.cover,
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(height: 10),
+                                      SizedBox(height: 10),
                                       Text(
                                         list[index]['title'].toString(),
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 14,
                                           color: Colors.white,
                                           fontWeight: FontWeight.w500,
@@ -540,47 +649,146 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              // Government Services (renamed to avoid confusion with the Explore Services blur effect)
-              // If this section is distinct, consider using unique image assets
-              const SizedBox(height: 30),
-              const Text(
-                'More Services', // Renamed from 'Government Services' to 'More Services'
+              // Government Services -------------------------------------------
+              SizedBox(height: 30),
+              Text(
+                'Government Services',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1,
-                  color: Colors.white,
                 ),
               ),
-              const SizedBox(height: 15),
+              SizedBox(height: 15),
+              RepaintBoundary(
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: Image.asset(
+                        'assets/ad1.png',
+                        width: double.infinity,
+                        height: 120,
+                        fit: BoxFit.cover,
+                        color: Colors.white.withOpacity(
+                          0.9,
+                        ), // Your desired opacity
+                        colorBlendMode:
+                            BlendMode
+                                .modulate, // Blend mode to apply transparency
+                      ),
+                    ),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 120,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: list.length,
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 10,
+                                ),
+                                child: Container(
+                                  width: 50,
+                                  padding: EdgeInsets.symmetric(vertical: 10),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        width: 50,
+                                        height: 50,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            width: 2,
+                                            color: Colors.black,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          color: Colors.white,
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          child: Image.asset(
+                                            list[index]['image'].toString(),
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(height: 10),
+                                      Text(
+                                        list[index]['title'].toString(),
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Discoveries ---------------------------------------------------
+              SizedBox(height: 30),
+              Text(
+                'Government Services',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                ),
+              ),
+              SizedBox(height: 15),
               SizedBox(
                 height: 150,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: ad.length, // Assuming 'ad' is just example images, adjust as needed
+                  itemCount: ad.length,
                   itemBuilder: (context, index) {
                     return Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
+                      padding: EdgeInsets.only(bottom: 8.0),
                       child: Container(
                         width: 110,
-                        margin: const EdgeInsets.only(right: 15),
-                        padding: const EdgeInsets.all(2),
+                        margin: EdgeInsets.only(right: 15),
+                        padding: EdgeInsets.all(2),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(15),
-                          border: Border.all(width: 2, color: Colors.transparent), // Border around the card
+                          border: Border.all(width: 2),
                           color: Colors.transparent,
                         ),
                         child: Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(15),
-                            color: Colors.blue, // This blue will be underneath the image
+                            color: Colors.blue,
                           ),
                           child: Stack(
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(15),
                                 child: Image.asset(
-                                  ad[index]['image'].toString(), // Using 'ad' images here
+                                  ad[index]['image'].toString(),
                                   width: double.infinity,
                                   height: double.infinity,
                                   fit: BoxFit.cover,
@@ -589,7 +797,8 @@ class _HomePageState extends State<HomePage> {
                               Container(
                                 height: double.infinity,
                                 width: double.infinity,
-                                padding: const EdgeInsets.only(left: 10, bottom: 5),
+                                // color: Colors.black,
+                                padding: EdgeInsets.only(left: 10, bottom: 5),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(15),
                                   gradient: LinearGradient(
@@ -606,8 +815,8 @@ class _HomePageState extends State<HomePage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      list[index]['title'].toString(), // Using 'list' titles here
-                                      style: const TextStyle(
+                                      list[index]['title'].toString(),
+                                      style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 14,
                                         letterSpacing: 1,
@@ -635,9 +844,9 @@ class _HomePageState extends State<HomePage> {
 Widget _action(IconData icon, String lable) {
   return Row(
     children: [
-      Icon(icon, size: 20, color: Colors.black87), // Ensure icon color is visible on yellow background
-      const SizedBox(width: 16),
-      Text(lable, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)), // Ensure text color is visible
+      Icon(icon, size: 20),
+      SizedBox(width: 16),
+      Text(lable, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
     ],
   );
 }
