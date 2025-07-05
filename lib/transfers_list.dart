@@ -1,27 +1,6 @@
+// transfers_list.dart
 import 'package:flutter/material.dart';
-
-void main() {
-  runApp(const ABATransferApp());
-}
-
-class ABATransferApp extends StatelessWidget {
-  const ABATransferApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'ABA Transfers',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        primaryColor: Colors.red,
-        fontFamily: 'Arial',
-        scaffoldBackgroundColor: const Color(0xFF0F1F2B),
-      ),
-      home: const ABATransferPage(),
-    );
-  }
-}
+import 'package:aba_app/transfer-to-other-aba-account.dart'; // Import the new page
 
 class ABATransferPage extends StatefulWidget {
   const ABATransferPage({super.key});
@@ -92,9 +71,10 @@ class _ABATransferPageState extends State<ABATransferPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: BackButton(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pop(context); // This will now pop back to HomePage
           },
         ),
         title: Container(
@@ -134,7 +114,7 @@ class _ABATransferPageState extends State<ABATransferPage> {
         children: [
           const Text(
             'Transfers',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 8),
           const Text(
@@ -149,7 +129,7 @@ class _ABATransferPageState extends State<ABATransferPage> {
                 SizedBox(height: 10),
                 Text(
                   'Not Found',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
                 Text(
                   'Sorry, there are no results that match your search.',
@@ -158,7 +138,22 @@ class _ABATransferPageState extends State<ABATransferPage> {
               ],
             )
           else
-            ...filteredOptions.map((item) => TransferTile(item)).toList(),
+            ...filteredOptions.map((item) {
+              // Add specific navigation for "Transfer to other ABA account"
+              if (item['title'] == 'Transfer to other ABA account') {
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const TransferToOtherABAPage()),
+                    );
+                  },
+                  child: TransferTile(item),
+                );
+              }
+              // For other items, just return the TransferTile
+              return TransferTile(item);
+            }).toList(),
         ],
       ),
     );
