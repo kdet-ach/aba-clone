@@ -1,6 +1,6 @@
 // transfers_list.dart
 import 'package:flutter/material.dart';
-import 'package:aba_app/transfer_to_other_.dart'; // Import the new page
+import 'package:aba_app/transfer_to_other_aba.dart'; // Import the new page
 
 class ABATransferPage extends StatefulWidget {
   const ABATransferPage({super.key});
