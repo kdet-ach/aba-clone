@@ -1,9 +1,6 @@
 // transfers_list.dart
 import 'package:flutter/material.dart';
-
-// You can define the theme for this specific page or inherit from the main app's theme
-// If you want a consistent theme across your app, define it in MainApp.
-// For now, let's keep the theme definition here if it's unique to this page.
+import 'package:aba_app/transfer_to_other_aba.dart'; // Import the new page
 
 class ABATransferPage extends StatefulWidget {
   const ABATransferPage({super.key});
@@ -71,12 +68,12 @@ class _ABATransferPageState extends State<ABATransferPage> {
     }).toList();
 
     return Scaffold(
+      backgroundColor: const Color(0xFF0F1F2B), // Ensure consistent background
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        // Using IconButton for the back button
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white), // Ensure icon color is visible on dark theme
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Navigator.pop(context); // This will now pop back to HomePage
           },
@@ -118,7 +115,7 @@ class _ABATransferPageState extends State<ABATransferPage> {
         children: [
           const Text(
             'Transfers',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white), // Ensure text color is visible
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 8),
           const Text(
@@ -142,36 +139,62 @@ class _ABATransferPageState extends State<ABATransferPage> {
               ],
             )
           else
-            ...filteredOptions.map((item) => TransferTile(item)).toList(),
+            // Map filteredOptions to TransferTile, providing onTap where needed
+            ...filteredOptions.map((item) {
+              if (item['title'] == 'Transfer to other ABA account') {
+                return TransferTile(
+                  item,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const TransferToOtherABAPage()),
+                    );
+                  },
+                );
+              }
+              // For all other items, use the default onTap behavior defined in TransferTile
+              return TransferTile(item);
+            }).toList(),
         ],
       ),
     );
   }
 }
 
+// The TransferTile class definition, as provided in the immersive artifact.
 class TransferTile extends StatelessWidget {
   final Map<String, dynamic> data;
+  final VoidCallback? onTap; // Added onTap to constructor
 
-  const TransferTile(this.data, {super.key});
+  const TransferTile(this.data, {super.key, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: const Color(0xFF1E2B38),
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: data['color'],
-          child: Icon(data['icon'], color: Colors.white),
-        ),
-        title: Text(
-          data['title'],
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-        ),
-        subtitle: Text(
-          data['subtitle'],
-          style: const TextStyle(color: Colors.grey),
+    return InkWell( // Wrap the Card with InkWell to make it tappable
+      onTap: onTap ?? () {
+        // Default action if no onTap is provided, e.g., show a snackbar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Tapped on ${data['title']}!')),
+        );
+      },
+      borderRadius: BorderRadius.circular(10), // Match the Card's border radius
+      child: Card(
+        color: const Color(0xFF1E2B38),
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: ListTile(
+          leading: CircleAvatar(
+            backgroundColor: data['color'],
+            child: Icon(data['icon'], color: Colors.white),
+          ),
+          title: Text(
+            data['title'],
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          ),
+          subtitle: Text(
+            data['subtitle'],
+            style: const TextStyle(color: Colors.grey),
+          ),
         ),
       ),
     );
