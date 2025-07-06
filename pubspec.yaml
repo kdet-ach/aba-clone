@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  percent_indicator: ^4.2.5
+  pie_chart: ^5.4.0
   
 
 dev_dependencies:
