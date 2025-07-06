@@ -4,7 +4,9 @@ import 'package:aba_app/settingaba.dart';
 import 'package:flutter/material.dart';
 
 // Import your TransferList page directly
-import 'transfers_list.dart';
+import 'package:aba_app/transfers_list.dart';
+import 'package:aba_app/account.dart';
+
 
 void main() {
   runApp(const MainApp()); // Make MainApp const if possible
@@ -317,12 +319,12 @@ class _HomePageState extends State<HomePage> {
                         );
                       }
                       // You can add more specific navigation for other items if needed
-                      // else if (data[index]['title'] == 'Accounts') {
-                      //   Navigator.push(
-                      //     context,
-                      //     MaterialPageRoute(builder: (context) => AccountsPage()),
-                      //   );
-                      // }
+                      else if (data[index]['title'] == 'Accounts') {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => AccountsPage()),
+                        );
+                      }
                     },
                     child: Container(
                       padding: const EdgeInsets.all(10),
