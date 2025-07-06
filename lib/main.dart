@@ -2,10 +2,9 @@ import 'dart:ui';
 import 'dart:async';
 import 'package:aba_app/settingaba.dart';
 import 'package:flutter/material.dart';
-
-// Import your TransferList page directly
 import 'package:aba_app/transfers_list.dart';
 import 'package:aba_app/account.dart';
+import 'package:aba_app/qr_code.dart';
 
 
 void main() {
@@ -126,15 +125,41 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top -----------------------------------------------------------
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: const [
-                  Icon(Icons.message_outlined, color: Colors.white),
-                  SizedBox(width: 20),
-                  Icon(Icons.notifications_outlined, color: Colors.white),
-                  SizedBox(width: 20),
-                  Icon(Icons.qr_code_outlined, color: Colors.white),
+                children: [ // Removed 'const' because children are no longer all const
+                  // Message Icon
+                  IconButton(
+                    icon: const Icon(Icons.message_outlined, color: Colors.white),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ABAPaymentQR()),
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 20),
+                  // Notifications Icon
+                  IconButton(
+                    icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ABAPaymentQR()),
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 20),
+                  // QR Code Icon (leading to SettingPage as per your previous code)
+                  IconButton(
+                    icon: const Icon(Icons.qr_code_outlined, color: Colors.white),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ABAPaymentQR()),
+                      );
+                    },
+                  ),
                 ],
               ),
               // User ----------------------------------------------------------
