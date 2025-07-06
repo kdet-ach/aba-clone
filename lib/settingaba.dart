@@ -1,11 +1,13 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-// void main() {
-//   runApp(Myapp());
-// }
+import 'loginpage.dart';
 
 class SettingPage extends StatelessWidget {
+  final User user;
+  const SettingPage({super.key, required this.user});
   @override
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
@@ -76,34 +78,57 @@ class SettingPage extends StatelessWidget {
                     ),
                     SizedBox(height: 30),
                     Center(
-                      child: Column(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 6),
-                            ),
-                            child: CircleAvatar(
-                              radius: 60,
-                              backgroundImage: AssetImage('assets/ad1.png'),
-                            ),
-                          ),
-                          SizedBox(height: 20),
-                          Text(
-                            "PHAL SOPHANIN",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            "លេខសម្គាល់: 12345",
-                            style: TextStyle(color: Colors.white, fontSize: 15),
-                          ),
-                        ],
+                      child: FutureBuilder<DocumentSnapshot>(
+                        future:
+                            FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(user.uid)
+                                .get(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return CircularProgressIndicator();
+                          }
+                          if (!snapshot.hasData) {
+                            return Text('User not found');
+                          }
+                          final user = snapshot.data!;
+                          return Column(
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 6,
+                                  ),
+                                ),
+                                child: CircleAvatar(
+                                  radius: 60,
+                                  backgroundImage: AssetImage('assets/ad1.png'),
+                                ),
+                              ),
+                              SizedBox(height: 20),
+                              Text(
+                                '${user['firstname'] ?? ''} ${user['lastname'] ?? ''}',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                "លេខសម្គាល់: 12345",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ),
                     SizedBox(height: 90),
@@ -271,6 +296,76 @@ class SettingPage extends StatelessWidget {
                             ],
                           ),
                         ),
+                        SizedBox(height: 10),
+                        // Container(
+                        //   margin: const EdgeInsets.symmetric(horizontal: 30),
+                        //   width: double.infinity,
+                        //   child: ElevatedButton(
+                        //     onPressed: () async {
+                        //       await FirebaseAuth.instance.signOut();
+                        //       Navigator.pushAndRemoveUntil(
+                        //         context,
+                        //         MaterialPageRoute(
+                        //           builder: (_) => const LoginPage(),
+                        //         ),
+                        //         (route) => false,
+                        //       );
+                        //     },
+                        //     style: ElevatedButton.styleFrom(
+                        //       backgroundColor: const Color.fromARGB(
+                        //         255,
+                        //         201,
+                        //         18,
+                        //         76,
+                        //       ),
+                        //       padding: const EdgeInsets.symmetric(
+                        //         horizontal: 160,
+                        //         vertical: 18,
+                        //       ),
+                        //       textStyle: const TextStyle(fontSize: 18),
+                        //       shape: RoundedRectangleBorder(
+                        //         borderRadius: BorderRadius.circular(10),
+                        //       ),
+                        //       elevation: 5,
+                        //     ),
+                        //     child: const Text(
+                        //       'Logout',
+                        //       style: TextStyle(color: Colors.white),
+                        //     ),
+                        //   ),
+                        // ),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              await FirebaseAuth.instance.signOut();
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const LoginPage(),
+                                ),
+                                (route) => false,
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 160,
+                                vertical: 18,
+                              ),
+                              textStyle: const TextStyle(fontSize: 18),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              elevation: 5,
+                            ),
+                            child: const Text(
+                              'Logout',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+
                         SizedBox(height: 10),
                         Container(
                           padding: EdgeInsets.all(2),
