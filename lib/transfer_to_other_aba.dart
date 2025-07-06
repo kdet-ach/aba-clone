@@ -1,5 +1,7 @@
 // transfer_to_other_aba.dart
 import 'package:flutter/material.dart';
+// You will need to add the 'qr_flutter' package to your pubspec.yaml if you use it elsewhere.
+// This page itself does not directly require 'qr_flutter'.
 
 class TransferToOtherABAPage extends StatefulWidget {
   const TransferToOtherABAPage({super.key});
@@ -76,7 +78,7 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
               icon: Icons.account_balance_wallet_outlined,
               hintText: 'Select your account',
               value: _selectedAccount,
-              items: ['Savings: 0.00 USD', 'Current: 1000.00 USD'], // Example items
+              items: const ['Savings: 0.00 USD', 'Current: 1000.00 USD'], // Example items
               onChanged: (String? newValue) {
                 setState(() {
                   _selectedAccount = newValue;
