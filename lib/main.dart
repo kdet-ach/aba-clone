@@ -134,9 +134,9 @@ class _HomePageState extends State<HomePage> {
                   IconButton(
                     icon: const Icon(Icons.message_outlined, color: Colors.white),
                     onPressed: () {
-                      // TODO: Implement navigation or action for message icon
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Message icon pressed!')),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ABAPaymentQR()),
                       );
                     },
                   ),
@@ -145,9 +145,9 @@ class _HomePageState extends State<HomePage> {
                   IconButton(
                     icon: const Icon(Icons.notifications_outlined, color: Colors.white),
                     onPressed: () {
-                      // TODO: Implement navigation or action for notifications icon
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Notifications icon pressed!')),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ABAPaymentQR()),
                       );
                     },
                   ),
