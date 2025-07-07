@@ -187,7 +187,7 @@ class ABAPaymentQR extends StatelessWidget {
                             ClipRRect(
                               borderRadius: BorderRadius.circular(10),
                               child: Image.asset(
-                                '../assets/qr.png',
+                                'assets/qr.png',
                                 width: 250,
                                 height: 250,
                               ),
