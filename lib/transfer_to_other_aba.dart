@@ -1,13 +1,13 @@
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
-import 'package:flutter/services.dart';
+
+
 import 'main.dart';
 
 class TransferToOtherABAPage extends StatefulWidget {
   final User user;
-
   const TransferToOtherABAPage({super.key, required this.user});
 
   @override
@@ -18,20 +18,17 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
   bool _addToFavorites = false;
   bool _transferAsGift = false;
   final _formKey = GlobalKey<FormState>();
-  final _accountController = TextEditingController();
-  final _amountController = TextEditingController();
-  final _maskFormatter = MaskTextInputFormatter(
-    mask: '### ### ###',
-    filter: {"#": RegExp(r'[0-9]')},
-  );
+  final TextEditingController _accountController = TextEditingController();
+  final TextEditingController _amountController = TextEditingController();
   String _status = '';
 
   Future<void> _transfer() async {
     if (!_formKey.currentState!.validate()) return;
+
     final confirmed = await _showPasswordDialog(context);
     if (confirmed != true) return;
-
-    final recipientAccount = _accountController.text.trim().replaceAll(' ', '');
+    final senderUid = widget.user.uid;
+    final recipientAccount = _accountController.text.trim();
     final amount = double.tryParse(_amountController.text.trim());
 
     if (amount == null || amount <= 0) {
@@ -40,11 +37,13 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
     }
 
     try {
-      final recipientQuery = await FirebaseFirestore.instance
-          .collection('users')
-          .where('accountNumber', isEqualTo: recipientAccount)
-          .limit(1)
-          .get();
+      // Find recipient by email
+      final recipientQuery =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .where('accountNumber', isEqualTo: recipientAccount)
+              .limit(1)
+              .get();
 
       if (recipientQuery.docs.isEmpty) {
         setState(() => _status = 'Recipient not found');
@@ -54,11 +53,14 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
       final recipientDoc = recipientQuery.docs.first;
       final recipientUid = recipientDoc.id;
 
+      // Run transaction to update both balances atomically
       await FirebaseFirestore.instance.runTransaction((transaction) async {
-        final senderRef =
-            FirebaseFirestore.instance.collection('users').doc(widget.user.uid);
-        final recipientRef =
-            FirebaseFirestore.instance.collection('users').doc(recipientUid);
+        final senderRef = FirebaseFirestore.instance
+            .collection('users')
+            .doc(senderUid);
+        final recipientRef = FirebaseFirestore.instance
+            .collection('users')
+            .doc(recipientUid);
 
         final senderSnapshot = await transaction.get(senderRef);
         final recipientSnapshot = await transaction.get(recipientRef);
@@ -71,8 +73,11 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
         }
 
         transaction.update(senderRef, {'balance': senderBalance - amount});
-        transaction.update(recipientRef, {'balance': recipientBalance + amount});
+        transaction.update(recipientRef, {
+          'balance': recipientBalance + amount,
+        });
 
+        // Record the transaction
         await FirebaseFirestore.instance.collection('transactions').add({
           'from': widget.user.uid,
           'to': recipientUid,
@@ -86,15 +91,14 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
         _amountController.clear();
         _accountController.clear();
       });
-
-      Future.delayed(const Duration(seconds: 1), () {
+      Future.delayed(Duration(seconds: 1), () {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => HomePage(user: widget.user)),
         );
       });
     } catch (e) {
-      setState(() => _status = 'Error: $e');
+      setState(() => _status = 'Error: ${e.toString()}');
     }
   }
 
@@ -137,6 +141,7 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
             TextButton(
               onPressed: () {
                 if (formKey.currentState?.validate() == true) {
+                  // If password is valid, close dialog and return true
                   Navigator.of(context).pop(true);
                 }
               },
@@ -151,13 +156,17 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F1F2B),
+      backgroundColor: const Color(
+        0xFF0F1F2B,
+      ), // Consistent with your app's dark theme
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
         title: const Text(
           'ABA Transfers',
@@ -172,6 +181,7 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 20),
+              // Red circular icon with double-arrow
               Container(
                 width: 80,
                 height: 80,
@@ -186,9 +196,14 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
                     ),
                   ],
                 ),
-                child: const Icon(Icons.compare_arrows, color: Colors.white, size: 40),
+                child: const Icon(
+                  Icons.compare_arrows, // Double-arrow icon
+                  color: Colors.white,
+                  size: 40,
+                ),
               ),
               const SizedBox(height: 20),
+              // Title text
               const Text(
                 'Transfer to other ABA account',
                 style: TextStyle(
@@ -200,10 +215,11 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
               ),
               const SizedBox(height: 30),
               StreamBuilder<DocumentSnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(widget.user.uid)
-                    .snapshots(),
+                stream:
+                    FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(widget.user.uid)
+                        .snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
                     return _buildInputField(
@@ -211,9 +227,11 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
                       hintText: 'Loading balance...',
                     );
                   }
-                  final userData = snapshot.data!.data() as Map<String, dynamic>;
+                  final userData =
+                      snapshot.data!.data() as Map<String, dynamic>;
                   final balance = userData['balance']?.toString() ?? '0.00';
-                  final accountNumber = userData['accountNumber']?.toString() ?? '';
+                  final accountNumber =
+                      userData['accountNumber']?.toString() ?? '';
                   return _buildInputField(
                     icon: Icons.account_balance_wallet_outlined,
                     hintText: 'Account: $accountNumber | Balance: $balance USD',
@@ -221,46 +239,40 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
                 },
               ),
               const SizedBox(height: 15),
+              // Enter receiver account number
               _buildInputField(
                 icon: Icons.person_outline,
                 hintText: 'Enter receiver account number',
                 suffixIcon: Icons.bookmark_border,
-                keyboardType: TextInputType.number,
                 controller: _accountController,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  _maskFormatter,
-                ],
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Enter account number';
-                  final cleanValue = value.replaceAll(' ', '');
-                  if (cleanValue.length != 9 || int.tryParse(cleanValue) == null) {
-                    return 'Account must be 9 digits';
-                  }
-                  return null;
-                },
+                validator:
+                    (value) =>
+                        value == null || value.isEmpty
+                            ? 'Enter account number'
+                            : null,
               ),
               const SizedBox(height: 15),
+              // Amount
               _buildInputField(
                 icon: Icons.attach_money,
                 hintText: 'Amount',
                 keyboardType: TextInputType.number,
                 controller: _amountController,
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
-                ],
                 validator: (value) {
                   final amount = double.tryParse(value ?? '');
-                  if (amount == null || amount <= 0) return 'Enter a valid amount';
+                  if (amount == null || amount <= 0)
+                    return 'Enter a valid amount';
                   return null;
                 },
               ),
               const SizedBox(height: 15),
+              // Remark (optional)
               _buildInputField(
                 icon: Icons.edit_outlined,
                 hintText: 'Remark (optional)',
               ),
               const SizedBox(height: 30),
+              // Add to Favorites toggle
               _buildToggleRow(
                 icon: Icons.star_border,
                 text: 'Add to Favorites',
@@ -272,6 +284,7 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
                 },
               ),
               const SizedBox(height: 15),
+              // Transfer as Gift toggle
               _buildToggleRow(
                 icon: Icons.card_giftcard,
                 text: 'Transfer as Gift',
@@ -283,13 +296,14 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
                 },
               ),
               const SizedBox(height: 40),
+              // TRANSFER button
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
                   onPressed: _transfer,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
+                    backgroundColor: Colors.red, // Button color
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -305,16 +319,16 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
                   ),
                 ),
               ),
-              if (_status.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Text(
-                    _status,
-                    style: TextStyle(
-                      color: _status.contains('success') ? Colors.green : Colors.red,
-                    ),
+              if (_status.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text(
+                  _status,
+                  style: TextStyle(
+                    color:
+                        _status.contains('success') ? Colors.green : Colors.red,
                   ),
                 ),
+              ],
             ],
           ),
         ),
@@ -322,41 +336,45 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
     );
   }
 
+  // Helper method to build text input fields
   Widget _buildInputField({
     required IconData icon,
     required String hintText,
     IconData? suffixIcon,
     TextInputType keyboardType = TextInputType.text,
-    TextEditingController? controller,
-    List<TextInputFormatter>? inputFormatters,
-    String? Function(String?)? validator,
+    TextEditingController? controller, // Add this for controller support
+    String? Function(String?)? validator, // Add this for validation
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white12,
+        color: Colors.white12, // Darker background for input fields
         borderRadius: BorderRadius.circular(10),
       ),
       child: TextFormField(
         controller: controller,
         validator: validator,
         keyboardType: keyboardType,
-        inputFormatters: inputFormatters ?? [],
         style: const TextStyle(color: Colors.white),
         cursorColor: Colors.redAccent,
         decoration: InputDecoration(
           prefixIcon: Icon(icon, color: Colors.white70),
           hintText: hintText,
           hintStyle: const TextStyle(color: Colors.white54),
-          suffixIcon: suffixIcon != null
-              ? Icon(suffixIcon, color: Colors.white70)
-              : null,
+          suffixIcon:
+              suffixIcon != null
+                  ? Icon(suffixIcon, color: Colors.white70)
+                  : null,
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 15,
+            horizontal: 10,
+          ),
         ),
       ),
     );
   }
 
+  // Helper method to build toggle rows
   Widget _buildToggleRow({
     required IconData icon,
     required String text,
@@ -379,7 +397,7 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: Colors.red,
+          activeColor: Colors.red, // Active color for the switch
           inactiveThumbColor: Colors.grey,
           inactiveTrackColor: Colors.grey.withOpacity(0.5),
         ),

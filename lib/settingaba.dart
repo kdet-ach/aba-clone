@@ -46,6 +46,7 @@ class SettingPage extends StatelessWidget {
                   children: [
                     Row(
                       children: [
+                        SizedBox(height: 20,),
                         IconButton(
                           icon: Icon(
                             Icons.close,
