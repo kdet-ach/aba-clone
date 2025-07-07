@@ -158,132 +158,213 @@ class _HistoryPageState extends State<HistoryPage> {
                               .collection('transactions')
                               .where('from', isEqualTo: widget.user.uid)
                               .snapshots(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                          return const Center(
-                            child: Text(
-                              'No transactions found.',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          );
-                        }
-                        final transactions = snapshot.data!.docs;
+                      builder: (context, sentSnapshot) {
+                        return StreamBuilder<QuerySnapshot>(
+                          stream:
+                              FirebaseFirestore.instance
+                                  .collection('transactions')
+                                  .where('to', isEqualTo: widget.user.uid)
+                                  .snapshots(),
+                          builder: (context, receivedSnapshot) {
+                            if (sentSnapshot.connectionState ==
+                                    ConnectionState.waiting ||
+                                receivedSnapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
 
-                        return ListView.builder(
-                          itemCount: transactions.length,
-                          itemBuilder: (context, index) {
-                            final data =
-                                transactions[index].data()
-                                    as Map<String, dynamic>;
-                            final recipientUid = data['to'];
-                            return FutureBuilder<DocumentSnapshot>(
-                              future:
-                                  FirebaseFirestore.instance
-                                      .collection('users')
-                                      .doc(recipientUid)
-                                      .get(),
-                              builder: (context, userSnapshot) {
-                                String recipientName = recipientUid;
-                                if (userSnapshot.hasData &&
-                                    userSnapshot.data!.exists) {
-                                  final userData =
-                                      userSnapshot.data!.data()
-                                          as Map<String, dynamic>;
-                                  recipientName =
-                                      '${userData['firstname'] ?? ''} ${userData['lastname'] ?? ''}'
-                                          .trim();
-                                }
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16.0,
-                                        vertical: 8.0,
-                                      ),
-                                      child: Text(
-                                        data['timestamp'] != null
-                                            ? (data['timestamp'] as Timestamp)
-                                                .toDate()
-                                                .toString()
-                                            : '',
-                                        style: const TextStyle(
-                                          color: Colors.white70,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                    InkWell(
-                                      // Added InkWell here to make the card tappable
-                                      onTap: () {
-                                        // Define what happens when a transaction card is tapped
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              'Tapped on transaction with $recipientName for \$${data['amount']}',
+                            // Combine sent and received transactions
+                            final sentTransactions =
+                                sentSnapshot.hasData
+                                    ? sentSnapshot.data!.docs
+                                        .map((doc) => MapEntry(doc, 'sent'))
+                                        .toList()
+                                    : [];
+
+                            final receivedTransactions =
+                                receivedSnapshot.hasData
+                                    ? receivedSnapshot.data!.docs
+                                        .map((doc) => MapEntry(doc, 'received'))
+                                        .toList()
+                                    : [];
+
+                            final allTransactions = [
+                              ...sentTransactions,
+                              ...receivedTransactions,
+                            ];
+
+                            // Sort by timestamp (newest first)
+                            allTransactions.sort((a, b) {
+                              final aTime =
+                                  a.key.data()!['timestamp'] as Timestamp;
+                              final bTime =
+                                  b.key.data()!['timestamp'] as Timestamp;
+                              return bTime.compareTo(aTime); // newest first
+                            });
+
+                            if (allTransactions.isEmpty) {
+                              return const Center(
+                                child: Text(
+                                  'No transactions found.',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              );
+                            }
+
+                            return ListView.builder(
+                              itemCount: allTransactions.length,
+                              itemBuilder: (context, index) {
+                                final entry = allTransactions[index];
+                                final data =
+                                    entry.key.data() as Map<String, dynamic>;
+                                final transactionType = entry.value;
+                                final otherUserUid =
+                                    transactionType == 'sent'
+                                        ? data['to']
+                                        : data['from'];
+
+                                return FutureBuilder<DocumentSnapshot>(
+                                  future:
+                                      FirebaseFirestore.instance
+                                          .collection('users')
+                                          .doc(otherUserUid)
+                                          .get(),
+                                  builder: (context, userSnapshot) {
+                                    String otherUserName = otherUserUid;
+                                    if (userSnapshot.hasData &&
+                                        userSnapshot.data!.exists) {
+                                      final userData =
+                                          userSnapshot.data!.data()
+                                              as Map<String, dynamic>;
+                                      otherUserName =
+                                          '${userData['firstname'] ?? ''} ${userData['lastname'] ?? ''}'
+                                              .trim();
+                                    }
+
+                                    final amount = data['amount'];
+                                    final isSent = transactionType == 'sent';
+
+                                    return Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16.0,
+                                            vertical: 8.0,
+                                          ),
+                                          child: Text(
+                                            data['timestamp'] != null
+                                                ? (data['timestamp']
+                                                        as Timestamp)
+                                                    .toDate()
+                                                    .toString()
+                                                : '',
+                                            style: const TextStyle(
+                                              color: Colors.white70,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                        );
-                                      },
-                                      child: Container(
-                                        color: const Color(0xFF1E2B38),
-                                        margin: const EdgeInsets.only(
-                                          bottom: 2.0,
                                         ),
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 16.0,
-                                          vertical: 12.0,
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            CircleAvatar(
-                                              backgroundColor: Colors.purple,
-                                              child: Text(
-                                                recipientName.isNotEmpty
-                                                    ? recipientName
-                                                        .substring(0, 2)
-                                                        .toUpperCase()
-                                                    : '??',
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
+                                        InkWell(
+                                          onTap: () {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  isSent
+                                                      ? 'Sent \$${amount} to $otherUserName'
+                                                      : 'Received \$${amount} from $otherUserName',
                                                 ),
                                               ),
+                                            );
+                                          },
+                                          child: Container(
+                                            color: const Color(0xFF1E2B38),
+                                            margin: const EdgeInsets.only(
+                                              bottom: 2.0,
                                             ),
-                                            const SizedBox(width: 16),
-                                            Expanded(
-                                              child: Text(
-                                                recipientName.isNotEmpty
-                                                    ? recipientName.toUpperCase()
-                                                    : '??',
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 16,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 16.0,
+                                              vertical: 12.0,
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                CircleAvatar(
+                                                  backgroundColor:
+                                                      isSent
+                                                          ? Colors.red
+                                                          : Colors.green,
+                                                  child: Text(
+                                                    otherUserName.isNotEmpty
+                                                        ? otherUserName
+                                                            .substring(0, 2)
+                                                            .toUpperCase()
+                                                        : '??',
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
                                                 ),
-                                              ),
+                                                const SizedBox(width: 16),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        isSent
+                                                            ? 'To: $otherUserName'
+                                                            : 'From: $otherUserName',
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 16,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        isSent
+                                                            ? 'Sent'
+                                                            : 'Received',
+                                                        style: TextStyle(
+                                                          color:
+                                                              isSent
+                                                                  ? Colors.red
+                                                                  : Colors
+                                                                      .green,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Text(
+                                                  isSent
+                                                      ? '-\$${amount}'
+                                                      : '+\$${amount}',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color:
+                                                        isSent
+                                                            ? Colors.red
+                                                            : Colors.green,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                            Text(
-                                              '-\$${data['amount']}',
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                color: Colors.red,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ],
+                                          ),
                                         ),
-                                      ),
-                                    ),
-                                  ],
+                                      ],
+                                    );
+                                  },
                                 );
                               },
                             );
@@ -295,7 +376,7 @@ class _HistoryPageState extends State<HistoryPage> {
                   // Bottom Pay & Transfer Button
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(16.0), 
+                    padding: const EdgeInsets.all(16.0),
                     child: ElevatedButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
