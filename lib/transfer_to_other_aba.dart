@@ -26,7 +26,10 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
     if (!_formKey.currentState!.validate()) return;
 
     final confirmed = await _showPasswordDialog(context);
-    if (confirmed != true) return;
+if (confirmed != true) {
+  setState(() => _status = 'Transaction canceled or incorrect password');
+  return;
+}
     final senderUid = widget.user.uid;
     final recipientAccount = _accountController.text.trim();
     final amount = double.tryParse(_amountController.text.trim());
@@ -103,62 +106,102 @@ class _TransferToOtherABAPageState extends State<TransferToOtherABAPage> {
   }
 
   Future<bool?> _showPasswordDialog(BuildContext context) async {
-    final passwordController = TextEditingController();
-    final formKey = GlobalKey<FormState>();
+  final _passwordController = TextEditingController();
+  final formKey = GlobalKey<FormState>();
+  final user = FirebaseAuth.instance.currentUser;
+  String? errorMessage;
 
-    return await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Confirm Transaction"),
-          content: Form(
-            key: formKey,
-            child: TextFormField(
-              controller: passwordController,
-              obscureText: true,
-              keyboardType: TextInputType.number,
-              maxLength: 6,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your PIN';
-                }
-                if (value.length != 6 || int.tryParse(value) == null) {
-                  return 'PIN must be 6 digits';
-                }
-                return null;
-              },
-              decoration: const InputDecoration(
-                labelText: "Enter PIN",
-                border: OutlineInputBorder(),
+  if (user == null || user.email == null) {
+    // If no user or email exists
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('User not authenticated')),
+    );
+    return false;
+  }
+
+  return await showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setStateDialog) {
+          return AlertDialog(
+            title: const Text("Confirm Transaction"),
+            content: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12.0),
+                      child: Text(
+                        errorMessage!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    keyboardType: TextInputType.number,
+                    maxLength: 6, // 🔐 Limit to 6 characters
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your 6-digit PIN';
+                      }
+                      if (value.length != 6 || int.tryParse(value) == null) {
+                        return 'PIN must be exactly 6 digits';
+                      }
+                      return null;
+                    },
+                    decoration: const InputDecoration(
+                      labelText: "Enter 6-digit PIN",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: Navigator.of(context).pop,
-              child: const Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () {
-                if (formKey.currentState?.validate() == true) {
-                  // If password is valid, close dialog and return true
-                  Navigator.of(context).pop(true);
-                }
-              },
-              child: const Text("Confirm"),
-            ),
-          ],
-        );
-      },
-    );
-  }
+            actions: [
+              TextButton(
+                onPressed: Navigator.of(context).pop,
+                child: const Text("Cancel"),
+              ),
+              TextButton(
+                onPressed: () async {
+                  if (formKey.currentState?.validate() == true) {
+                    try {
+                      final credential = EmailAuthProvider.credential(
+                        email: user.email!,
+                        password: _passwordController.text.trim(),
+                      );
+
+                      await user.reauthenticateWithCredential(credential);
+
+                      Navigator.of(context).pop(true);
+                    } catch (e) {
+                      setStateDialog(() {
+                        _passwordController.clear();
+                        errorMessage = 'Incorrect password. Please try again.';
+                      });
+                    }
+                  }
+                },
+                child: const Text("Confirm"),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(
         0xFF0F1F2B,
-      ), // Consistent with your app's dark theme
+      ), 
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
