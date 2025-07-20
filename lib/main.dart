@@ -305,9 +305,9 @@ class _HomePageState extends State<HomePage> {
                     physics: NeverScrollableScrollPhysics(),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
-                      mainAxisSpacing: 15,
-                      crossAxisSpacing: 15,
-                      childAspectRatio: 1.3,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                      childAspectRatio: 1,
                     ),
                     itemCount: data.length,
                     itemBuilder: (context, index) {
@@ -347,14 +347,14 @@ class _HomePageState extends State<HomePage> {
                             children: [
                               Image.asset(
                                 data[index]['image'].toString(),
-                                height: 50,
-                                width: 50,
+                                height: 30,
+                                width: 30,
                               ),
                               SizedBox(height: 10),
                               Text(
                                 data[index]['title'].toString(),
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: 1,
                                 ),

@@ -67,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 160,
+                    horizontal: 24,
                     vertical: 18,
                   ),
                   textStyle: const TextStyle(fontSize: 18),
@@ -91,7 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 160,
+                    horizontal: 24,
                     vertical: 18,
                   ),
                   textStyle: const TextStyle(fontSize: 18),
